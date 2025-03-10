@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCQ Website</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>MCQ Website</h1>
+    
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert success">File uploaded successfully!</div>
+    <% } %>
+    
+    <div class="upload-section">
+      <h2>Upload MCQ File</h2>
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".txt" required>
+        <button type="submit">Upload</button>
+      </form>
+    </div>
+    
+    <div class="test-section">
+      <h2>Take a Test</h2>
+      <form action="/test" method="get">
+        <div class="form-group">
+          <label for="tag">Filter by Tag:</label>
+          <input type="text" id="tag" name="tag" placeholder="e.g. bcs::34">
+        </div>
+        
+        <div class="form-group">
+          <label for="hierarchy">Filter by Hierarchy:</label>
+          <select id="hierarchy" name="hierarchy">
+            <option value="">All Hierarchies</option>
+            <% hierarchies.forEach(hierarchy => { %>
+              <option value="<%= hierarchy %>"><%= hierarchy %></option>
+            <% }) %>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="limit">Number of Questions:</label>
+          <input type="range" id="limit" name="limit" min="5" max="50" value="10">
+          <span id="limitValue">10</span>
+        </div>
+        
+        <button type="submit">Start Test</button>
+      </form>
+    </div>
+    
+    <div class="navigation">
+      <a href="/dashboard" class="button">View Dashboard</a>
+    </div>
+  </div>
+  
+  <script>
+    // Display slider value
+    const limitSlider = document.getElementById('limit');
+    const limitValue = document.getElementById('limitValue');
+    
+    limitSlider.addEventListener('input', function() {
+      limitValue.textContent = this.value;
+    });
+  </script>
+</body>
+</html>

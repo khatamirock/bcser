@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Your Performance Dashboard</h1>
+    
+    <div class="stats-container">
+      <div class="stat-box">
+        <h3>Tests Completed</h3>
+        <p id="tests-completed">0</p>
+      </div>
+      
+      <div class="stat-box">
+        <h3>Average Score</h3>
+        <p id="average-score">0%</p>
+      </div>
+      
+      <div class="stat-box">
+        <h3>Total Questions</h3>
+        <p id="total-questions">0</p>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <h2>Performance by Category</h2>
+      <canvas id="category-chart"></canvas>
+    </div>
+    
+    <div class="recent-tests">
+      <h2>Recent Tests</h2>
+      <table id="recent-tests-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Score</th>
+            <th>Time Taken</th>
+            <th>Categories</th>
+          </tr>
+        </thead>
+        <tbody id="tests-body">
+          <!-- Test data will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="navigation">
+      <a href="/" class="button">Back to Home</a>
+    </div>
+  </div>
+  
+  <script>
+    // Load test results from localStorage
+    const testResults = JSON.parse(localStorage.getItem('testResults') || '[]');
+    
+    // Update stats
+    document.getElementById('tests-completed').textContent = testResults.length;
+    
+    if (testResults.length > 0) {
+      let totalScore = 0;
+      let totalQuestions = 0;
+      
+      testResults.forEach(test => {
+        totalScore += test.score;
+        totalQuestions += test.total;
+      });
+      
+      const averageScore = Math.round((totalScore / totalQuestions) * 100);
+      document.getElementById('average-score').textContent = `${averageScore}%`;
+      document.getElementById('total-questions').textContent = totalQuestions;
+      
+      // Populate recent tests table
+      const testsBody = document.getElementById('tests-body');
+      testResults.slice(-5).reverse().forEach(test => {
+        const row = document.createElement('tr');
+        
+        const dateCell = document.createElement('td');
+        dateCell.textContent = new Date(test.date).toLocaleDateString();
+        
+        const scoreCell = document.createElement('td');
+        scoreCell.textContent = `${test.score}/${test.total} (${Math.round(test.score/test.total*100)}%)`;
+        
+        const timeCell = document.createElement('td');
+        const minutes = Math.floor(test.timeTaken / 60);
+        const seconds = test.timeTaken % 60;
+        timeCell.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        
+        const tagsCell = document.createElement('td');
+        tagsCell.textContent = test.tags.join(', ');
+        
+        row.appendChild(dateCell);
+        row.appendChild(scoreCell);
+        row.appendChild(timeCell);
+        row.appendChild(tagsCell);
+        
+        testsBody.appendChild(row);
+      });
+      
+      // Create chart for categories
+      const categoryData = {};
+      testResults.forEach(test => {
+        test.tags.forEach(tag => {
+          if (!categoryData[tag]) {
+            categoryData[tag] = { correct: 0, total: 0 };
+          }
+          categoryData[tag].correct += test.score;
+          categoryData[tag].total += test.total;
+        });
+      });
+      
+      const categories = Object.keys(categoryData);
+      const percentages = categories.map(cat => 
+        Math.round((categoryData[cat].correct / categoryData[cat].total) * 100)
+      );
+      
+      const ctx = document.getElementById('category-chart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: categories,
+          datasets: [{
+            label: 'Success Rate %',
+            data: percentages,
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

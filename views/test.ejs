@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCQ Test</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .question-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .option-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .option-container label {
+      margin-left: 8px;
+    }
+    .explanation {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 4px;
+    }
+    .locked {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MCQ Test</h1>
+    
+    <div id="question-container">
+      <% if (questions.length === 0) { %>
+        <p>No questions found with the selected criteria.</p>
+      <% } else { %>
+        <form id="test-form" method="post" action="/test?tag=<%= tag %>&hierarchy=<%= hierarchy %>&limit=<%= limit %>">
+          <% questions.forEach((question, index) => { %>
+            <div class="question-card">
+              <h3><%= question.question %></h3>
+              
+              <div class="options">
+                <% question.options.forEach((option, optIndex) => { %>
+                  <div class="option-container">
+                    <input type="radio" name="q<%= index %>" id="q<%= index %>_<%= optIndex %>" value="<%= optIndex %>">
+                    <label for="q<%= index %>_<%= optIndex %>"><%= option %></label>
+                  </div>
+                <% }) %>
+              </div>
+              
+              <div class="explanation" style="display: none;">
+                <h4>Explanation:</h4>
+                <p><%= question.explanation %></p>
+              </div>
+            </div>
+          <% }) %>
+          
+          <button type="submit">Submit Test</button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+  <script>
+    const tag = "<%= tag %>";
+    const hierarchy = "<%= hierarchy %>";
+    const limit = "<%= limit %>";
+    const options = document.querySelectorAll('input[type="radio"]');
+
+    options.forEach(option => {
+      option.addEventListener('change', function() {
+        const questionCard = this.closest('.question-card');
+        questionCard.classList.add('locked');
+        
+        const explanation = questionCard.querySelector('.explanation');
+        explanation.style.display = 'block';
+      });
+    });
+  </script>
+</body>
+</html>
